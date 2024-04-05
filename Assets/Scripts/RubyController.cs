@@ -4,59 +4,66 @@ using UnityEngine;
 
 public class RubyController : MonoBehaviour
 {
-    public float speed = 3f;
+    [SerializeField] float speed = 3.0f;
 
     public int maxHealth = 5;
 
-    int currentHealth;
-    public int health { get { return maxHealth; } }
+    [HideInInspector] public int health { get { return currrentHealth; } }
+    int currrentHealth;
 
-    Rigidbody2D rigidbody2d;
+    bool isInvincible;
+    float invincibleTimer;
+    [SerializeField] float timeInvincible;
+
+    Rigidbody2D playerRB;
     float horizontal;
     float vertical;
-
 
     // Start is called before the first frame update
     void Start()
     {
-        //FPS Controller
-        /*
-        QualitySettings.vSyncCount = 0;
-        Application.targetFrameRate = 60; 
-        */
+        playerRB = GetComponent<Rigidbody2D>();
 
-        rigidbody2d = GetComponent<Rigidbody2D>();
-
-        currentHealth = maxHealth;
-        currentHealth = 1;
-
+        currrentHealth = maxHealth;
     }
 
     // Update is called once per frame
     void Update()
     {
-        //Movement Inputs Horizontal/Vertical
         horizontal = Input.GetAxis("Horizontal");
         vertical = Input.GetAxis("Vertical");
 
+        if (isInvincible)
+        {
+            invincibleTimer -= Time.deltaTime;
+            if (invincibleTimer < 0 ) 
+            { 
+                isInvincible = false; 
+            }
+        }
     }
 
     void FixedUpdate()
     {
-        //Calculate movement
-        Vector2 position = rigidbody2d.position;
+        Vector2 position = playerRB.position;
         position.x = position.x + speed * horizontal * Time.deltaTime;
         position.y = position.y + speed * vertical * Time.deltaTime;
-
-        rigidbody2d.MovePosition(position);
+        playerRB.MovePosition(position);
     }
 
     public void ChangeHealth(int amount)
     {
+        if (amount < 0)
+        {
+            if (isInvincible)
+            {
+                return;
+            }
 
-        currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
-        Debug.Log(currentHealth + "/" + maxHealth);
-
+            isInvincible = true;
+            invincibleTimer = timeInvincible;
+        }
+        currrentHealth = Mathf.Clamp(currrentHealth + amount, 0, maxHealth);
+        Debug.Log(currrentHealth + "/" + maxHealth);
     }
-
 }
